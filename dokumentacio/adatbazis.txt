@@ -1,0 +1,258 @@
+--Máté Bence, Rigó László, Szabó Richárd István
+DROP TABLE Irta;
+DROP TABLE Szerzo;
+DROP TABLE Kosar;
+DROP TABLE RendelesTartalom;
+DROP TABLE Rendeles;
+DROP TABLE KonyvAruhaz;
+DROP TABLE Aruhazak;
+DROP TABLE Felhasznalok;
+DROP TABLE Konyv;
+
+-- Az Aruhazak tabla attribútumai: áruház id-ja, áruház neve és címe.
+CREATE TABLE Aruhazak (
+aruhaz_id NUMBER(4,0) PRIMARY KEY NOT NULL, 
+nev VARCHAR2(50) NOT NULL, 
+cim VARCHAR2(200) NOT NULL
+); 
+
+-- A Felhasznalok tábla attribútumai: A felhasználó id-ja, felhasználóneve, jelszava, lakcíme, emailje, telefonszáma, és ha admin akkor az "admin" oszlop 1-es értéket vesz fel.
+CREATE TABLE Felhasznalok (
+user_id NUMBER(4,0) PRIMARY KEY NOT NULL, 
+username VARCHAR2(40) NOT NULL, 
+jelszo VARCHAR2(400) NOT NULL, 
+lakcim VARCHAR2(100) NOT NULL, 
+email VARCHAR2(100) NOT NULL, 
+telefonszam VARCHAR2(15) NOT NULL, 
+admin NUMBER(1,0) NOT NULL,
+torzsvasarlo NUMBER(1,0) NOT NULL
+);
+
+-- A Konyv tábla attribútumai: A könyv id-ja, címe, kiadója, ára, kiadási éve, valamint a borítója BLOB-ban, amit az alkalmazás BASE64 formátumra hoz, és tárolja el az adatbázisban.
+CREATE TABLE Konyv(
+konyv_id NUMBER(4,0) PRIMARY KEY NOT NULL, 
+cim VARCHAR2(100) NOT NULL, 
+kiado VARCHAR2(100) NOT NULL, 
+ar NUMBER(10,0) NOT NULL, 
+kiadas NUMBER(4,0) NOT NULL, 
+borito BLOB,
+mufaj VARCHAR(200)
+);
+
+-- A Szerzo tábla attribútumai: A szerző id-ja és neve.
+CREATE TABLE Szerzo (
+szerzo_id NUMBER(4,0) PRIMARY KEY NOT NULL, 
+nev VARCHAR2(100) NOT NULL
+);
+
+-- Az Irta tábla attribútumai: A könyv id-ja és szerző id-ja. (Egy könyvnek több szerzője lehet -> kapcsolótábla)
+CREATE TABLE Irta (
+konyv_id NUMBER(4,0) NOT NULL, 
+szerzo_id NUMBER(4,0) NOT NULL,
+FOREIGN KEY(konyv_id) REFERENCES Konyv(konyv_id) ON  DELETE CASCADE,
+FOREIGN KEY(szerzo_id) REFERENCES Szerzo(szerzo_id) ON DELETE CASCADE
+);
+
+-- A Kosar tábla attribútumai: A felhasználó id-ja, a könyv id-ja és hogy hány darab van az adott könyvből, adott felhasználó kosarában.
+CREATE TABLE Kosar (
+user_id NUMBER(4,0) NOT NULL, 
+konyv_id NUMBER(4,0) NOT NULL, 
+db NUMBER(2,0) NOT NULL,
+FOREIGN KEY(konyv_id) REFERENCES Konyv(konyv_id) ON DELETE CASCADE,
+FOREIGN KEY(user_id) REFERENCES Felhasznalok(user_id) ON DELETE CASCADE
+);
+
+-- A Rendeles tábla attribútumai: A felhasználó id-ja, a rendelés id-ja és a számla BLOB-ban, az alkalmazás elkészít egy pdf-et, amit BASE64 formátumban eltárol az adatbázisban.
+CREATE TABLE Rendeles (
+user_id NUMBER(4,0) NOT NULL, 
+rendeles_id NUMBER(4,0) PRIMARY KEY NOT NULL, 
+szamla BLOB,
+FOREIGN KEY(user_id) REFERENCES Felhasznalok(user_id) ON DELETE CASCADE
+);
+
+-- A RendelesTartalom tábla attribútumai: A rendelés id-ja, a könyv id-ja és az adott könyvek megrendelt darabja.
+CREATE TABLE RendelesTartalom (
+rendeles_id NUMBER(4,0) NOT NULL, 
+konyv_id NUMBER(4,0) NOT NULL, 
+db NUMBER(2,0) NOT NULL,
+FOREIGN KEY(konyv_id) REFERENCES Konyv(konyv_id) ON DELETE CASCADE,
+FOREIGN KEY(rendeles_id) REFERENCES Rendeles(rendeles_id) ON DELETE CASCADE
+);
+
+-- A KonyvAruhaz tábla attribútumai: Az áruház id-ja, a könyv id-ja és hogy az adott áruházban melyik könyvből hány darab található.
+CREATE TABLE KonyvAruhaz (
+aruhaz_id NUMBER(4,0) NOT NULL, 
+konyv_id NUMBER(4,0) NOT NULL, 
+db NUMBER(4,0) NOT NULL,
+FOREIGN KEY(konyv_id) REFERENCES Konyv(konyv_id) ON DELETE CASCADE,
+FOREIGN KEY(aruhaz_id) REFERENCES Aruhazak(aruhaz_id) ON DELETE CASCADE
+);
+
+-- Az Aruhazak tábla feltöltése:
+Insert into Aruhazak values (0,'Nagyáruház','Szeged');
+Insert into Aruhazak values (1,'Budapesti áruház','Budapest');
+Insert into Aruhazak values (2,'Debreceni áruház','Debrecen');
+Insert into Aruhazak values (3,'Miskolci áruház','Miskolc');
+Insert into Aruhazak values (4,'Györi áruház','Györ');
+Insert into Aruhazak values (5,'Pécsi áruház','Pécs');
+
+-- A Felhasznalok tábla feltöltése:
+Insert into Felhasznalok values (0,'Ricsi19','admin','Szeged','ricsi@ricsi.com','123456789',1,0);
+Insert into Felhasznalok values (1,'Laci','admin','Szeged','laci@laci.com','123456789',1,0);
+Insert into Felhasznalok values (2,'Bence','admin','Szeged','Bence@Bence.com','123456789',1,0);
+Insert into Felhasznalok values (3,'dummie1','dummie','Szeged','Bence@Bence.com','123456789',0,0);
+Insert into Felhasznalok values (4,'dummie2','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (5,'dummie3','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (6,'dummie4','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (7,'dummie5','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (8,'dummie6','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (9,'dummie7','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (10,'dummie8','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (11,'dummie9','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (12,'dummie10','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (13,'dummie11','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+Insert into Felhasznalok values (14,'dummie12','dummie','Szeged','dummie@dummie.com','123456789',0,0);
+
+-- A Konyv tábla feltöltése:
+Insert into Konyv values (10,'Az ír farkas','Álomgyár Kiadó',4999,'2024',NULL,'Romantikus');
+Insert into Konyv values (11,'Becsület','Álomgyár Kiadó',4999,'2024',NULL,'Romantikus');
+Insert into Konyv values (0,'A játszma','Álomgyár Kiadó',4999,'2024',NULL,'Thriller');
+Insert into Konyv values (1,'Mint a szemed fényére','Álomgyár Kiadó',2999,'2018',NULL,'Thriller');
+Insert into Konyv values (2,'Aki keres az talál','Álomgyár Kiadó',3499,'2018',NULL,'Romantikus');
+Insert into Konyv values (3,'Vágyom a pillanatra','Álomgyár Kiadó',4499,'2024',NULL,'Dráma');
+Insert into Konyv values (4,'Mr. Aranyifjú','Álomgyár Kiadó',4499,'2024',NULL,'Romantikus');
+Insert into Konyv values (5,'Teremtett látszat','Álomgyár Kiadó',4499,'2024',NULL,'Thriller');
+Insert into Konyv values (6,'Nyomodban','Álomgyár Kiadó',999,'2018',NULL,'Romantikus');
+Insert into Konyv values (7,'Csak szex','Álomgyár Kiadó',999,'2018',NULL,'Thriller');
+Insert into Konyv values (8,'Menyasszony rendelésre','Álomgyár Kiadó',499,'2021',NULL,'Romantikus');
+Insert into Konyv values (9,'Kurt Cobain és a Nirvana','Álomgyár Kiadó',1999,'2022',NULL,'Thriller');
+Insert into Konyv values (12,'Hamu','Álomgyár Kiadó',4999,'2024',NULL,'Dráma');
+Insert into Konyv values (13,'Bajban Dubajban','Álomgyár Kiadó',4999,'2024',NULL,'Romantikus');
+Insert into Konyv values (14,'Balin találkozunk!','Álomgyár Kiadó',4999,'2024',NULL,'Dráma');
+
+-- A Szerzo tábla feltöltése:
+Insert into Szerzo values (0,'VI KEELAND');
+Insert into Szerzo values (1,'HEIDI PERKS');
+Insert into Szerzo values (2,'CORINNE MICHAELS');
+Insert into Szerzo values (3,'LOUISE BAY');
+Insert into Szerzo values (4,'LUDÁNYI BETTINA');
+Insert into Szerzo values (5,'HELEN HOANG');
+Insert into Szerzo values (6,'ANDREW EARLES');
+Insert into Szerzo values (7,'CHARLES CROSS');
+Insert into Szerzo values (8,'GILLIAN G. GAAR');
+Insert into Szerzo values (9,'BOB GENDRON');
+Insert into Szerzo values (10,'ANNE L GREEN');
+Insert into Szerzo values (11,'CORA REILLY');
+Insert into Szerzo values (12,'JOHN CURE');
+Insert into Szerzo values (13,'BORSA BROWN');
+Insert into Szerzo values (14,'TOMOR ANITA');
+
+-- Az Irta tábla feltöltése:
+Insert into Irta values (10,10);
+Insert into Irta values (11,11);
+Insert into Irta values (12,12);
+Insert into Irta values (0,0);
+Insert into Irta values (1,1);
+Insert into Irta values (2,1);
+Insert into Irta values (3,2);
+Insert into Irta values (4,3);
+Insert into Irta values (5,4);
+Insert into Irta values (6,4);
+Insert into Irta values (7,0);
+Insert into Irta values (8,5);
+Insert into Irta values (9,6);
+Insert into Irta values (9,7);
+Insert into Irta values (9,9);
+Insert into Irta values (13,13);
+Insert into Irta values (14,14);
+
+-- A KonyvAruhaz tábla feltöltése:
+Insert into KonyvAruhaz values (4,6,40);
+Insert into KonyvAruhaz values (5,11,40);
+Insert into KonyvAruhaz values (0,0,20);
+Insert into KonyvAruhaz values (0,3,40);
+Insert into KonyvAruhaz values (0,8,10);
+Insert into KonyvAruhaz values (1,5,50);
+Insert into KonyvAruhaz values (2,2,10);
+Insert into KonyvAruhaz values (2,4,10);
+Insert into KonyvAruhaz values (2,6,40);
+Insert into KonyvAruhaz values (3,2,40);
+Insert into KonyvAruhaz values (2,7,40);
+Insert into KonyvAruhaz values (5,9,30);
+Insert into KonyvAruhaz values (5,13,30);
+Insert into KonyvAruhaz values (4,1,30);
+Insert into KonyvAruhaz values (3,13,30);
+
+-- A Kosar tábla feltöltése:
+Insert into Kosar values (0,0,2);
+Insert into Kosar values (0,4,2);
+Insert into Kosar values (0,7,1);
+Insert into Kosar values (1,11,1);
+Insert into Kosar values (1,13,5);
+Insert into Kosar values (1,4,4);
+Insert into Kosar values (2,4,4);
+Insert into Kosar values (2,9,4);
+Insert into Kosar values (3,9,4);
+Insert into Kosar values (3,6,4);
+Insert into Kosar values (3,8,4);
+Insert into Kosar values (3,2,4);
+Insert into Kosar values (4,2,4);
+Insert into Kosar values (4,8,4);
+Insert into Kosar values (5,8,4);
+Insert into Kosar values (5,7,4);
+Insert into Kosar values (5,3,1);
+Insert into Kosar values (6,3,1);
+Insert into Kosar values (6,7,1);
+Insert into Kosar values (6,12,1);
+Insert into Kosar values (7,12,1);
+Insert into Kosar values (7,1,1);
+Insert into Kosar values (7,6,1);
+Insert into Kosar values (8,6,1);
+Insert into Kosar values (8,3,5);
+Insert into Kosar values (8,8,5);
+Insert into Kosar values (9,8,5);
+Insert into Kosar values (9,14,5);
+Insert into Kosar values (9,13,5);
+
+-- A Rendeles tábla feltöltése:
+Insert into Rendeles values (0,0,NULL);
+Insert into Rendeles values (0,1,NULL);
+Insert into Rendeles values (0,2,NULL);
+Insert into Rendeles values (1,3,NULL);
+Insert into Rendeles values (1,4,NULL);
+Insert into Rendeles values (2,5,NULL);
+Insert into Rendeles values (3,6,NULL);
+Insert into Rendeles values (4,7,NULL);
+Insert into Rendeles values (4,8,NULL);
+Insert into Rendeles values (5,9,NULL);
+Insert into Rendeles values (6,10,NULL);
+Insert into Rendeles values (6,11,NULL);
+Insert into Rendeles values (6,12,NULL);
+Insert into Rendeles values (7,13,NULL);
+Insert into Rendeles values (8,14,NULL);
+
+-- A RendelesTartalom tábla feltöltése:
+Insert into RendelesTartalom values (0,0,2);
+Insert into RendelesTartalom values (0,7,2);
+Insert into RendelesTartalom values (0,3,2);
+Insert into RendelesTartalom values (1,13,2);
+Insert into RendelesTartalom values (1,12,2);
+Insert into RendelesTartalom values (2,8,1);
+Insert into RendelesTartalom values (2,3,1);
+Insert into RendelesTartalom values (2,4,1);
+Insert into RendelesTartalom values (3,2,1);
+Insert into RendelesTartalom values (4,5,1);
+Insert into RendelesTartalom values (5,6,1);
+Insert into RendelesTartalom values (5,8,1);
+Insert into RendelesTartalom values (6,10,1);
+Insert into RendelesTartalom values (7,10,1);
+Insert into RendelesTartalom values (8,12,1);
+Insert into RendelesTartalom values (9,12,1);
+Insert into RendelesTartalom values (10,2,1);
+Insert into RendelesTartalom values (10,5,1);
+Insert into RendelesTartalom values (11,6,1);
+Insert into RendelesTartalom values (12,6,1);
+Insert into RendelesTartalom values (13,6,1);
+Insert into RendelesTartalom values (14,6,1);
+Insert into RendelesTartalom values (14,2,1);
+Insert into RendelesTartalom values (14,12,1);
