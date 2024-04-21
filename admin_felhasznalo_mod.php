@@ -1,7 +1,4 @@
-<?php
-session_start();
-require "functions.php";
-$users = get_users();
+
 
 if (isset($_POST["delete_user"])) {
     if (isset($_POST["user_id"])) {
