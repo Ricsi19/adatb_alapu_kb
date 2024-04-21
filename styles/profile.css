@@ -1,0 +1,24 @@
+#main_container {
+    height: 45em;
+    width: 30em;
+    margin: auto;
+    margin-top: 7em;
+}
+
+.bar {
+    width: 100%;
+    height: 0.2em;
+    background-color: #3b3b4f;
+    margin: 0.5em 0 0.5em 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+h1,
+h2 {
+    margin: 0;
+}

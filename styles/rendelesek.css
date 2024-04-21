@@ -1,0 +1,41 @@
+#main_container {
+    width: 50%;
+    height: 100%;
+    margin: auto;
+}
+
+.rendeles {
+    width: auto;
+    height: auto;
+}
+
+.rendeles_tartalom {
+    display: flex;
+    flex-direction: row;
+}
+
+.names,
+.prices {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.names {
+    align-items: flex-start;
+    justify-content: space-evenly;
+}
+
+.prices {
+    align-items: flex-end;
+}
+
+.total {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+p {
+    text-align: end;
+}

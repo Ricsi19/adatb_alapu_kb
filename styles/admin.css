@@ -1,0 +1,88 @@
+nav{
+    position: fixed;
+    top: 0;
+    width: 100%;
+    right: 0;
+}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+li {
+    float: left;
+    border-right: 1px solid #03001c;
+}
+li a, .dropbtn {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+li a:hover {
+    background-color: rgba(124, 38, 205, 0.527);
+}
+.active{
+    background-color:chocolate;
+}
+.info{
+    text-align: center;
+    margin-top: 0px;
+    font-size: xx-large;
+    font-family: sans-serif;
+}
+.center{
+    text-align: center;
+}
+form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+fieldset {
+    border: none;
+    padding: 2rem 0;
+}
+
+fieldset:not(:last-of-type) {
+    border-bottom: 3px solid #71718c;
+}
+
+label {
+    display: block;
+    margin: 0.5rem 0;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+}
+
+input, textarea {
+    background-color: #18184d;
+    border: 1px solid #18184d;
+    color: #ffffff;
+}
+
+.inline {
+    width: unset;
+    margin: 0 0.5em 0 0;
+    vertical-align: middle;
+}
+
+input[type="submit"] {
+    display:block;
+    width: 100%;
+    font-size: 1.1rem;
+    border-color: white;
+    min-width: 300px;
+}
+
+input[type="number"] {
+    width: 97.6%;
+}
