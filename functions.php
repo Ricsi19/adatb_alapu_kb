@@ -424,29 +424,13 @@ function rendeles_keszit($user_id){
 
 
     $sql2 = "INSERT INTO system.rendelestartalom VALUES(:rendeles_id, :konyv_id, :db)";
-    $sql3 = "SELECT * FROM (SELECT * FROM system.konyvaruhaz WHERE konyv_id = :konyv_id ORDER BY db DESC) WHERE ROWNUM = 1";
-    $sql4 = "UPDATE system.konyvaruhaz SET db = :db WHERE konyv_id = :konyv_id AND aruhaz_id = :aruhaz_id";
     $result = oci_parse($c, $sql2);
-    $aruhaz_result = oci_parse($c, $sql3);
-    $aruhaz_update = oci_parse($c, $sql4);
     for($i = 0; $i < count($kosar); $i++){
-        oci_bind_by_name($aruhaz_result, ":konyv_id", $kosar[$i]["KONYV_ID"]);
-        oci_execute($aruhaz_result, OCI_DEFAULT) or die ("Sikertelen lekérdezés");
-        $aruhaz = oci_fetch_assoc($aruhaz_result);
-
-        $newdb = $aruhaz["DB"] - $kosar[$i]["DB"];
-        oci_bind_by_name($aruhaz_update, ":konyv_id", $kosar[$i]["KONYV_ID"]);
-        oci_bind_by_name($aruhaz_update, ":aruhaz_id", $aruhaz["ARUHAZ_ID"]);
-        oci_bind_by_name($aruhaz_update, ":db", $newdb);
-        oci_execute($aruhaz_update, OCI_COMMIT_ON_SUCCESS) or die ("Sikertelen lekérdezés");
-
         oci_bind_by_name($result, ":rendeles_id", $maxr_id);
         oci_bind_by_name($result, ":konyv_id", $kosar[$i]['KONYV_ID']);
         oci_bind_by_name($result, ":db", $kosar[$i]['DB']);
         oci_execute($result, OCI_COMMIT_ON_SUCCESS) or die ("Sikertelen lekérdezés");
     }
-    oci_free_statement($aruhaz_result);
-    oci_free_statement($aruhaz_update);
     oci_free_statement($result);
     oci_close($c);
 }

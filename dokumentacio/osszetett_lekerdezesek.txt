@@ -22,7 +22,7 @@ INNER JOIN Irta I ON K.konyv_id = I.konyv_id
 INNER JOIN Szerzo S ON I.szerzo_id = S.szerzo_id
 ORDER BY K.ar DESC;
 
--- Áruházak és az ott elérhető könyvek átlagos ára, műfajonként, csak azokra a műfajokra korlátozva, ahol az átlagos ár meghaladja az 5000 Ft-ot.
+-- Áruházak és az ott elérhető könyvek átlagos ára, műfajonként, csak azokra a műfajokra korlátozva, ahol az átlagos ár meghaladja az 3000 Ft-ot.
 SELECT A.nev AS aruhaz_neve, K.mufaj, AVG(K.ar) AS atlagos_ar
 FROM Aruhazak A
 INNER JOIN KonyvAruhaz KA ON A.aruhaz_id = KA.aruhaz_id
