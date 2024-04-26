@@ -390,27 +390,15 @@ function kosar_urit($user_id){
 //konyv kosarba helyezese
 function kosarba_helyez($konyv_id, $db, $user_id){
     $c = oci_pconnect("localuser", "admin123", "//localhost:1521/XEPDB1", "UTF8");
-    $tmp = get_konyv_keszlet($konyv_id);
-    $raktar = 0;
-    for($i = 0; $i < count($tmp);$i++){
-        $raktar += $tmp[$i]['DB'];
-    }
-    if($raktar < $db){
-        oci_close($c);
-        return "Nincs elég raktáron!";
-    }
-    else{
-        // IDE KELL MAJD EGY TRIGGER
-        $sql2 = "INSERT INTO system.kosar VALUES(:user_id, :konyv_id, :db)";
-        $result = oci_parse($c, $sql2);
-        oci_bind_by_name($result, ":user_id", $user_id);
-        oci_bind_by_name($result, ":konyv_id", $konyv_id);
-        oci_bind_by_name($result, ":db", $db);
-        oci_execute($result, OCI_COMMIT_ON_SUCCESS) or die('Sikertelen lekérdezés');
-        oci_free_statement($result);
-        oci_close($c);
-        return "Sikeresen a kosárba téve!";
-    }
+    $sql = 'BEGIN SYSTEM.KOSARBA_RAK(:user_id, :konyv_id, :db, :siker); END;';
+    $result = oci_parse($c, $sql);
+    oci_bind_by_name($result, ':user_id', $user_id);
+    oci_bind_by_name($result, ':konyv_id', $konyv_id);
+    oci_bind_by_name($result, ':db', $db);
+    oci_bind_by_name($result, ':siker', $siker,80, SQLT_CHR);
+    oci_execute($result);
+    oci_close($c);
+    return $siker;
 }
 
 ////// RENDELÉSHEZ TARTOZÓ FÜGGVÉNYEK \\\\\\
@@ -489,7 +477,7 @@ function get_rendeles_by_user_id($id) {
 //uj user felvitele adatbazisba regisztracional
 function regist_user($username, $location, $email, $mobilphone, $password){
     $c = oci_pconnect("localuser", "admin123", "//localhost:1521/XEPDB1", "UTF8");
-    $stmt = oci_parse($c, 'select * from system.felhasznalok where username = :username');
+    /*$stmt = oci_parse($c, 'select * from system.felhasznalok where username = :username');
     $stmt2 = oci_parse($c, 'select * from system.felhasznalok where email = :email');
     oci_bind_by_name($stmt, ':username', $username,-1);
     oci_bind_by_name($stmt2, ':email', $email,-1);
@@ -524,7 +512,19 @@ function regist_user($username, $location, $email, $mobilphone, $password){
       else{
         return "Ez az e-mail cím már használatban van!";
       }
-      oci_close($c);
+      oci_close($c);*/
+    $encpass = password_hash($password, PASSWORD_DEFAULT);
+    $sql = 'BEGIN SYSTEM.USER_REGIST(:username, :location, :email, :phone, :password, :siker); END;';
+    $result = oci_parse($c, $sql);
+    oci_bind_by_name($result, ':username', $username);
+    oci_bind_by_name($result, ':location', $location);
+    oci_bind_by_name($result, ':email', $email);
+    oci_bind_by_name($result, ':phone', $mobilphone);
+    oci_bind_by_name($result, ':password', $encpass);
+    oci_bind_by_name($result, ':siker', $siker,80, SQLT_CHR);
+    oci_execute($result);
+    oci_close($c);
+    return $siker;
 }
 
 

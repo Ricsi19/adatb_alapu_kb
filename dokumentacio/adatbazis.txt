@@ -88,6 +88,65 @@ FOREIGN KEY(konyv_id) REFERENCES Konyv(konyv_id) ON DELETE CASCADE,
 FOREIGN KEY(aruhaz_id) REFERENCES Aruhazak(aruhaz_id) ON DELETE CASCADE
 );
 
+-- Könyv hozzáadása a kosárhoz procedure (tárolt objektum) segítségével.
+CREATE OR REPLACE PROCEDURE kosarba_rak (felhasznalo IN NUMBER, konyvid IN NUMBER, darab IN NUMBER, siker OUT VARCHAR2)
+IS
+    konyv_raktar NUMBER := 0;
+    v_sorsz NUMBER := 0;
+    nincs_eleg EXCEPTION;
+BEGIN
+    DECLARE 
+        CURSOR raktar_osszegyujt IS
+            SELECT db FROM konyvaruhaz WHERE konyv_id = konyvid;
+    BEGIN
+        FOR keszlet IN raktar_osszegyujt 
+        LOOP
+            konyv_raktar := konyv_raktar + keszlet.db;
+        END LOOP;
+    END;
+    IF konyv_raktar < darab THEN
+        RAISE nincs_eleg;
+    ELSE
+        INSERT INTO kosar VALUES(felhasznalo, konyvid, darab);
+        siker := 'Sikeresen a kosárhoz adva!';
+        COMMIT;
+    END IF;
+EXCEPTION
+    WHEN nincs_eleg THEN
+        siker := 'Nincs elég raktáron!';
+END;
+
+--Új felhasználó hozzáadása regisztrációnál procedure (tárolt eljárás) segítségével.
+CREATE OR REPLACE PROCEDURE user_regist(name IN VARCHAR2, location IN VARCHAR2, em IN VARCHAR2, phone IN VARCHAR2, password IN VARCHAR2, siker OUT VARCHAR2)
+IS
+    max_id NUMBER := 0;
+    foglalt_user NUMBER := 0;
+    foglalt_em NUMBER := 0;
+    foglalt_username EXCEPTION;
+    foglalt_email EXCEPTION;
+BEGIN
+    SELECT MAX(user_id)+1 INTO max_id FROM felhasznalok;
+    SELECT COUNT(*) INTO foglalt_user FROM felhasznalok WHERE
+    username = name;
+    SELECT COUNT(*) INTO foglalt_em FROM felhasznalok WHERE
+    email = em;
+    IF foglalt_user > 0 THEN
+        RAISE foglalt_username;
+    ELSIF foglalt_em > 0 THEN
+        RAISE foglalt_email;
+    ELSE
+        INSERT INTO felhasznalok VALUES(max_id, name, password, location, em, phone, 0, 0);
+	COMMIT;
+        siker := 'Sikeres regisztráció!';
+    END IF;
+EXCEPTION
+    WHEN foglalt_username THEN
+        siker := 'Ez a felhasználónév már foglalt!';
+    WHEN foglalt_email THEN
+        siker := 'Ez az email cím már foglalt!';
+END;
+
+
 -- Az Aruhazak tábla feltöltése:
 Insert into Aruhazak values (0,'Nagyáruház','Szeged');
 Insert into Aruhazak values (1,'Budapesti áruház','Budapest');

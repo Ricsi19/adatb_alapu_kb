@@ -37,7 +37,7 @@ if(isset($_POST['kosarba'])){
         $uzenetek = "Nem vagy bejelentkezve!";
     }
     else{
-        $uzenetek = kosarba_helyez($_GET['id'], $_POST['db'], $_SESSION['user_id']);
+        $uzenetek = kosarba_helyez((int)$_GET['id'], (int)$_POST['db'], (int)$_SESSION['user_id']);
     }
 }
 $konyv = get_konyv($_GET['id']);
