@@ -1,0 +1,60 @@
+TODO: Ezeket a lekérdezéseket az SSADM-be tenni.
+
+-- Áruházak nevei és az ott elérhető könyvek átlagos árai műfajonként
+SELECT A.nev AS aruhaz_neve, K.mufaj, AVG(K.ar) AS atlagos_ar
+FROM Aruhazak A
+INNER JOIN KonyvAruhaz KA ON A.aruhaz_id = KA.aruhaz_id
+INNER JOIN Konyv K ON KA.konyv_id = K.konyv_id
+GROUP BY A.nev, K.mufaj;
+
+--Felhasználók és a rendelt könyvek száma felhasználónként.
+SELECT F.username, COUNT(RT.rendeles_id) AS rendelt_konyvek_szama
+FROM Felhasznalok F
+LEFT JOIN Rendeles R ON F.user_id = R.user_id
+LEFT JOIN RendelesTartalom RT ON R.rendeles_id = RT.rendeles_id
+GROUP BY F.username
+HAVING COUNT(RT.rendeles_id) > 0
+
+-- Könyvek címe és szerzőjének neve, rendezve az árak szerint csökkenő sorrendben.
+SELECT K.cim, S.nev AS szerzo_neve, K.ar
+FROM Konyv K
+INNER JOIN Irta I ON K.konyv_id = I.konyv_id
+INNER JOIN Szerzo S ON I.szerzo_id = S.szerzo_id
+ORDER BY K.ar DESC;
+
+-- Áruházak és az ott elérhető könyvek átlagos ára, műfajonként, csak azokra a műfajokra korlátozva, ahol az átlagos ár meghaladja az 5000 Ft-ot.
+SELECT A.nev AS aruhaz_neve, K.mufaj, AVG(K.ar) AS atlagos_ar
+FROM Aruhazak A
+INNER JOIN KonyvAruhaz KA ON A.aruhaz_id = KA.aruhaz_id
+INNER JOIN Konyv K ON KA.konyv_id = K.konyv_id
+GROUP BY A.nev, K.mufaj
+HAVING AVG(K.ar) > 3000;
+
+-- Felhasználók és a rendelt könyvek összértéke felhasználónként.
+SELECT F.username, SUM(K.ar * RT.db) AS osszertek
+FROM Felhasznalok F
+LEFT JOIN Rendeles R ON F.user_id = R.user_id
+LEFT JOIN RendelesTartalom RT ON R.rendeles_id = RT.rendeles_id
+LEFT JOIN Konyv K ON RT.konyv_id = K.konyv_id
+GROUP BY F.username
+HAVING SUM(K.ar * RT.db) > 0;
+
+-- Könyvek címe, ára és azok darabszáma a kosarakban.
+SELECT K.cim, K.ar, SUM(KO.db) AS kosarban_db
+FROM Konyv K
+INNER JOIN Kosar KO ON K.konyv_id = KO.konyv_id
+GROUP BY K.cim, K.ar;
+
+-- Áruházak neve és az ott elérhető külöböző könyvek darabszáma műfajonként.
+SELECT A.nev AS aruhaz_neve, K.mufaj, COUNT(KA.konyv_id) AS konyv_darabszam
+FROM Aruhazak A
+INNER JOIN KonyvAruhaz KA ON A.aruhaz_id = KA.aruhaz_id
+INNER JOIN Konyv K ON KA.konyv_id = K.konyv_id
+GROUP BY A.nev, K.mufaj;
+
+-- Szerzők és általuk írt könyvek száma.
+SELECT S.nev AS szerzo_neve, COUNT(I.konyv_id) AS konyvek_szama
+FROM Szerzo S
+LEFT JOIN Irta I ON S.szerzo_id = I.szerzo_id
+GROUP BY S.nev
+HAVING COUNT(I.konyv_id) > 0

@@ -146,6 +146,41 @@ EXCEPTION
         siker := 'Ez az email cím már foglalt!';
 END;
 
+-- Trigger alkalmazása arra, ha egy felhasználó törzsvásárlóvá válik.
+CREATE OR REPLACE TRIGGER make_torzsvasarlo
+AFTER INSERT ON system.rendeles
+FOR EACH ROW
+DECLARE
+    db INT;
+    PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+    SELECT SUM(system.rendelestartalom.db) INTO db
+    FROM system.felhasznalok
+            INNER JOIN system.rendeles ON felhasznalok.user_id = rendeles.user_id
+            INNER JOIN system.rendelestartalom ON rendeles.rendeles_id = rendelestartalom.rendeles_id
+            WHERE felhasznalok.user_id = :NEW.user_id;
+    IF db >= 29 THEN
+        UPDATE felhasznalok
+        SET torzsvasarlo = 1
+        WHERE felhasznalok.user_id = :NEW.user_id;
+    END IF;
+    COMMIT;
+END;
+
+--Trigger alkalmazása arra, ha rendelés történik, több különböző áruház raktárjából vonja le a készletet.
+CREATE OR REPLACE TRIGGER keszlet_fix
+AFTER INSERT ON rendelestartalom
+FOR EACH ROW
+DECLARE
+    new_db NUMBER;
+    t_aruhaz_id NUMBER;
+BEGIN
+    SELECT db, aruhaz_id  INTO new_db, t_aruhaz_id FROM (SELECT * FROM system.konyvaruhaz WHERE konyv_id = :NEW.konyv_id ORDER BY db DESC) WHERE ROWNUM = 1;
+    IF new_db IS NOT NULL THEN
+        new_db := new_db - :NEW.db;
+        UPDATE konyvaruhaz SET db = new_db WHERE konyv_id = :NEW.konyv_id AND aruhaz_id = t_aruhaz_id;
+    END IF;
+END;
 
 -- Az Aruhazak tábla feltöltése:
 Insert into Aruhazak values (0,'Nagyáruház','Szeged');

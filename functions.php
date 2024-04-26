@@ -477,42 +477,6 @@ function get_rendeles_by_user_id($id) {
 //uj user felvitele adatbazisba regisztracional
 function regist_user($username, $location, $email, $mobilphone, $password){
     $c = oci_pconnect("localuser", "admin123", "//localhost:1521/XEPDB1", "UTF8");
-    /*$stmt = oci_parse($c, 'select * from system.felhasznalok where username = :username');
-    $stmt2 = oci_parse($c, 'select * from system.felhasznalok where email = :email');
-    oci_bind_by_name($stmt, ':username', $username,-1);
-    oci_bind_by_name($stmt2, ':email', $email,-1);
-    oci_execute($stmt, OCI_DEFAULT);
-    oci_execute($stmt2, OCI_DEFAULT);
-    $check = oci_fetch_array($stmt, OCI_ASSOC);
-    $check2 = oci_fetch_array($stmt2, OCI_ASSOC);
-    if($check == null && $check2 == null){
-        oci_free_statement($stmt);
-        oci_free_statement($stmt2);
-        $maxid = oci_parse($c, 'SELECT MAX(user_id) FROM system.Felhasznalok');
-        oci_execute($maxid, OCI_DEFAULT);
-        $maxid_d = oci_fetch_array($maxid);
-        oci_free_statement($maxid);
-        $rlymaxid = end($maxid_d)+1;
-        $encpass = password_hash($password, PASSWORD_DEFAULT);
-        $newu = oci_parse($c, 'INSERT INTO SYSTEM.FELHASZNALOK(user_id, username, jelszo, lakcim, email, telefonszam, admin, torzsvasarlo)
-        VALUES(:user_id_bv, :username_bv, :password_bv, :location_bv, :email_bv, :mobilphone_bv, 0,0)');
-        oci_bind_by_name($newu, ':user_id_bv', $rlymaxid);
-        oci_bind_by_name($newu, ":username_bv", $username);
-        oci_bind_by_name($newu, ":password_bv", $encpass);
-        oci_bind_by_name($newu, ":location_bv", $location);
-        oci_bind_by_name($newu, ":email_bv", $email);
-        oci_bind_by_name($newu, ":mobilphone_bv", $mobilphone);
-        oci_execute($newu, OCI_COMMIT_ON_SUCCESS);
-        oci_free_statement($newu);
-        return "Sikeres regisztráció!";
-      }
-      elseif($check != null){
-        return "Ez a felhasználónév már foglalt!";
-      }
-      else{
-        return "Ez az e-mail cím már használatban van!";
-      }
-      oci_close($c);*/
     $encpass = password_hash($password, PASSWORD_DEFAULT);
     $sql = 'BEGIN SYSTEM.USER_REGIST(:username, :location, :email, :phone, :password, :siker); END;';
     $result = oci_parse($c, $sql);
